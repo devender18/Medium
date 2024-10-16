@@ -1,29 +1,48 @@
 import {Hono} from 'hono';
-import { z } from 'zod'
+import { PrismaClient } from '@prisma/client/edge'
+import { withAccelerate } from '@prisma/extension-accelerate'
+import {sign, verify, decode} from 'hono/jwt';
 
-const app = new Hono();
+
+const app = new Hono<{
+  Bindings : {
+    DATABASE_URL : string
+  }
+}>()
 
 app.get('/',(c)=>{
   return c.text("hello !!!")
 });
 
+
+
 // 1. POST /api/v1/user/signup
 app.post('/api/v1/user/signup',async (c)=>{
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,}
+  ).$extends(withAccelerate())
+
   const body = await c.req.json();
 
-  // const response = Signup.safeParse(response);
+  try{
+    const user = await prisma.user.create({
+      data :{
+        email : body.email,
+        password : body.password,
+        name : body.name,
+  
+      } 
+    })
 
-  // if (!response.success){
-  //   return c.status(411).json({
-  //     "msg" : "Invalid Inputs"
-  //   })
-  // }
+    const token =  await sign({id : user.id},"secret");
 
+    return c.json({token: token})
 
+  }catch(err){
+    return c.json({msg : "error while signing up!"}, 403);
+  }
 
-  // })
-
-
+  
 
 })
 
