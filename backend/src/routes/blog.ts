@@ -2,39 +2,44 @@ import { Hono } from "hono";
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 import { sign, verify, decode } from "hono/jwt";
+import { createBlogInput, updateBlogInput } from "@dev2873/medium-common";
 
 export const blogRouter = new Hono<{
   Bindings: {
     DATABASE_URL: string;
     JWT_SECRET: string;
-  };
-
+  },
   Variables: {
-    userId: string;
+    userId: string,
+    
   };
 }>();
 
 // Middleware
 blogRouter.use("/*", async (c, next) => {
-  const authorization = c.req.header("Authorization");
+  const authorization = c.req.header("Authorization") || "";
 
-  if (!authorization) {
-    c.status(404);
-    return c.json({ error: "authentication failed!!!" });
-  }
+//   if (!authorization) {
+//     c.status(404);
+//     return c.json({ error: "authentication failed!!!" });
+//   }
 
-  const token = authorization.split(" ")[1];
-  console.log("token ---> ** ",token);
-  const decodedPayload = await verify(token, c.env.JWT_SECRET);
+  try{
+    const token = authorization.split(" ")[1];
+    const decodedPayload = await verify(token, c.env.JWT_SECRET);
 
-  if (!decodedPayload.id) {
-    return c.json({ msg: "Authentication failed !!!" }, 403);
-  }
+    if (!decodedPayload.id) {
+        return c.json({ msg: "Authentication failed !!!" }, 403);
+    }
 
-  // c.set('userId', decodedPayload.id);
-  c.set("userId", decodedPayload.id.toString());
-  await next();
+    // c.set('userId', decodedPayload.id);
+    c.set("userId", decodedPayload.id.toString());
+    await next();
+    }catch(err){
+        return c.text("you've been logged out!")
+    }
 });
+
 
 // 3. POST /api/v1/blog
 blogRouter.post("/", async (c) => {
@@ -44,6 +49,12 @@ blogRouter.post("/", async (c) => {
     
     
     const body = await c.req.json();
+
+    const {success} = createBlogInput.safeParse(body);
+
+    if (!success){
+        return c.json({msg : "Invalid Inputs by zod"},411)
+    }
 
     try{
         await prisma.post.create({
@@ -69,6 +80,12 @@ blogRouter.put("/", async (c) => {
     }).$extends(withAccelerate());
 
     const body = await c.req.json();
+
+    const {success} = updateBlogInput.safeParse(body);
+
+    if (!success){
+        return c.json({msg : "Invalid Inputs by zod"},411)
+    }
 
     try{
         await prisma.post.update({
