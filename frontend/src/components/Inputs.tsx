@@ -11,7 +11,7 @@ export function Inputs({title,placeholder, onChange, type}: InputTypes){
         <div className="mt-2">
             <label htmlFor="" className="font-bold">{title}</label>
             <div className="border-2 rounded-xl text-gray-400 mt-2">
-                <input type={type || "text"} name="" id="" placeholder={placeholder} className="p-2 outline-none" onChange={onChange} />
+                <input type={type || "text"} name="" id="" placeholder={placeholder} className="p-2 outline-none w-full" onChange={onChange} />
             </div>
 
         </div>

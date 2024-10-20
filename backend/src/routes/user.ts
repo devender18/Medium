@@ -24,7 +24,7 @@ userRouter.post("/signup", async (c) => {
 
   const body = await c.req.json();
 
-  const {success} = signinInput.safeParse(body);
+  const {success} = signupInput.safeParse(body);
 
   if (!success){
     return c.json({msg : "Invalid Inputs by zod"},411)
@@ -41,7 +41,7 @@ userRouter.post("/signup", async (c) => {
     console.log("user created");
     const token = await sign({ id: user.id }, c.env.JWT_SECRET);
 
-    return c.json({ token: token });
+    return c.json({ token: token, msg:"User has been created" });
   } catch (err) {
     return c.json({ msg: "error while signing up!" }, 403);
   }
