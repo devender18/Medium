@@ -57,7 +57,8 @@ blogRouter.post("/", async (c) => {
     }
 
     try{
-        await prisma.post.create({
+        console.log("*******-->",c.get("userId"));
+        const blog = await prisma.post.create({
             data :{
                 title : body.title,
                 content : body.content,
@@ -65,7 +66,7 @@ blogRouter.post("/", async (c) => {
             }
         })
 
-        return c.json({msg : "post has been created !!"})
+        return c.json({msg : "post has been created !!", id: blog.id })
     }catch(err){
         return c.json({msg : "couldn't create the post"},403)
     }
@@ -109,9 +110,10 @@ blogRouter.get("/get/:id", async(c) => {
     const prisma = new PrismaClient({
         datasourceUrl: c.env.DATABASE_URL,
     }).$extends(withAccelerate());
-
+    console.log("id --->",c.req.param('id'));
     try{
         const blog = await prisma.post.findFirst({
+            
             where : {
                 id : c.req.param('id')
             }
@@ -132,7 +134,18 @@ blogRouter.get("/bulk", async (c) => {
     }).$extends(withAccelerate());
 
     try{
-        const allPost = await prisma.post.findMany();
+        const allPost = await prisma.post.findMany({
+            select : {
+                content : true,
+                title : true,
+                id: true,
+                author:{
+                    select : {
+                        name : true
+                    }
+                }
+            }
+        });
         return c.json({allPosts: allPost})
     }catch(err){
         return c.json({msg : "error while fetching posts"})

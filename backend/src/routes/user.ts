@@ -35,7 +35,7 @@ userRouter.post("/signup", async (c) => {
       data: {
         email: body.email,
         password: body.password,
-        // name : body.name,
+        name : body.name,
       },
     });
     console.log("user created");
@@ -83,3 +83,19 @@ userRouter.post("/signin", async (c) => {
     return c.json({ msg: "Invalid password" });
   }
 });
+
+// 3. get all user
+userRouter.get("/getUser",async(c)=>{
+
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,
+  }).$extends(withAccelerate());
+
+  try{
+    const users = await prisma.user.findMany();
+
+    return c.json({users : users})
+  }catch(err){
+    return c.json({msg:"Error while fetching users"})
+  }
+})
