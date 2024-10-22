@@ -1,6 +1,9 @@
 import { Appbar } from "../components/Appbar";
 import { BlogCard } from "../components/BlogCard";
+import { BlogSkeleton } from "../components/BlogSkeleton";
 import { useBlogs } from "../hooks";
+
+
 
 export function Blogs() {
 
@@ -9,7 +12,13 @@ export function Blogs() {
     {/* you can implement skeletons */}
     if (loading){
         return <div>
-            loading...
+            <BlogSkeleton />
+            <BlogSkeleton />
+            <BlogSkeleton />
+            <BlogSkeleton />
+            <BlogSkeleton />
+            <BlogSkeleton />
+            <BlogSkeleton />
         </div>
     }
 
@@ -20,7 +29,7 @@ export function Blogs() {
         <div className="flex-col justify-center items-center w-10/12">
             {/* <div className="flex justify-center items-center"> */}
             <div className="w-full">
-                {blogs.map((blog)=><BlogCard authorName={blog.author.name || "anonyms"} title={blog.title} content={blog.content} publishedDate="Oct 22, 2024"/>)}
+                {blogs.map((blog)=><BlogCard authorName={blog.author.name || "anonyms"} title={blog.title} content={blog.content} publishedDate="Oct 22, 2024" id={blog.id}/>)}
             </div>
             {/* </div> */}
             </div>
